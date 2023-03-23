@@ -1,0 +1,83 @@
+using System.Collections;
+using System.IO;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class DialogueController : MonoBehaviour
+{
+    public Text dialogueText;
+    public float characterDelay = 0.1f;
+    public float fastForwardMultiplier = 10f;
+
+    private string[] dialogueLines;
+    private int currentLineIndex = 0;
+    private bool isDisplaying = false;
+    private bool fastForward = false;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        LoadDialogueFromFile("dialogue.txt");
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (isDisplaying)
+        {
+            if (fastForward)
+            {
+                dialogueText.text = dialogueLines[currentLineIndex];
+                isDisplaying = false;
+                fastForward = false;
+            }
+            else if (Input.GetMouseButtonDown(0))
+            {
+                StopCoroutine("DisplayDialogueLine");
+                DisplayFullDialogueLine();
+            }
+        }
+        else if (Input.GetMouseButtonDown(0))
+        {
+            DisplayNextDialogueLine();
+        }
+    }
+
+    private void LoadDialogueFromFile(string filePath)
+    {
+        dialogueLines = File.ReadAllLines(filePath);
+    }
+
+    private void DisplayNextDialogueLine()
+    {
+        if (currentLineIndex < dialogueLines.Length)
+        {
+            StartCoroutine("DisplayDialogueLine", dialogueLines[currentLineIndex]);
+            currentLineIndex++;
+        }
+    }
+
+    private IEnumerator DisplayDialogueLine(string line)
+    {
+        isDisplaying = true;
+        dialogueText.text = "";
+        foreach (char c in line)
+        {
+            dialogueText.text += c;
+            yield return new WaitForSeconds(characterDelay);
+        }
+        isDisplaying = false;
+    }
+
+    private void DisplayFullDialogueLine()
+    {
+        StopCoroutine("DisplayDialogueLine");
+        dialogueText.text = dialogueLines[currentLineIndex];
+        isDisplaying = false;
+    }
+
+    public void FastForwardDialogue()
+    {
+        fastForward = true;
+    }
+}
