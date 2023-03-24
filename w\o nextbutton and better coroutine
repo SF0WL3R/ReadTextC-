@@ -1,0 +1,122 @@
+using System.Collections;
+using System.IO;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class DialogueController : MonoBehaviour
+{
+    public Text dialogueText;
+    public float characterDelay = 0.1f;
+    public float fastForwardMultiplier = 10f;
+    public Button fastForwardButton;
+
+    private string[] dialogueLines;
+    private int currentLineIndex = 0;
+    private bool isDisplaying = false;
+    private bool fastForward = false;
+    private Coroutine currentCoroutine = null;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        LoadDialogueFromFile("dialogue.txt");
+        fastForwardButton.onClick.AddListener(FastForwardDialogue);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+    }
+
+    private void LoadDialogueFromFile(string filePath)
+    {
+        try
+        {
+            dialogueLines = File.ReadAllLines(filePath);
+        }
+        catch (IOException e)
+        {
+            Debug.LogError("Error loading dialogue file: " + e.Message);
+        }
+    }
+
+    private IEnumerator DisplayDialogueLine(string line)
+    {
+        isDisplaying = true;
+        dialogueText.text = "";
+        foreach (char c in line)
+        {
+            dialogueText.text += c;
+            yield return new WaitForSeconds(characterDelay);
+            if (fastForward)
+            {
+                characterDelay = characterDelay / fastForwardMultiplier;
+            }
+        }
+        isDisplaying = false;
+        currentCoroutine = null;
+    }
+
+    public void FastForwardDialogue()
+    {
+        if (!isDisplaying)
+        {
+            if (currentCoroutine != null)
+            {
+                StopCoroutine(currentCoroutine);
+            }
+            fastForward = true;
+            currentCoroutine = StartCoroutine(DisplayDialogueLine(dialogueLines[currentLineIndex]));
+        }
+        else
+        {
+            fastForward = true;
+        }
+    }
+
+    private void StopFastForward()
+    {
+        fastForward = false;
+        characterDelay = characterDelay * fastForwardMultiplier;
+    }
+
+    private IEnumerator FastForwardCoroutine()
+    {
+        while (isDisplaying)
+        {
+            characterDelay = characterDelay / fastForwardMultiplier;
+            yield return null;
+        }
+        StopFastForward();
+    }
+
+    private IEnumerator DisplayNextDialogueLineCoroutine()
+    {
+        yield return null;
+        while (isDisplaying)
+        {
+            yield return null;
+        }
+        currentLineIndex++;
+        if (currentLineIndex < dialogueLines.Length)
+        {
+            currentCoroutine = StartCoroutine(DisplayDialogueLine(dialogueLines[currentLineIndex]));
+        }
+        else
+        {
+            currentCoroutine = null;
+        }
+    }
+
+    private void DisplayNextDialogueLine()
+    {
+        if (!isDisplaying)
+        {
+            if (currentCoroutine != null)
+            {
+                StopCoroutine(currentCoroutine);
+            }
+            currentCoroutine = StartCoroutine(DisplayNextDialogueLineCoroutine());
+        }
+    }
+}
