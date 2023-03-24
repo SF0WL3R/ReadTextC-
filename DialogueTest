@@ -1,0 +1,99 @@
+using System.Collections;
+using System.IO;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class DialogueController : MonoBehaviour
+{
+    public Text dialogueText;
+    public float characterDelay = 0.1f;
+    public float fastForwardMultiplier = 10f;
+    public Button fastForwardButton;
+
+    private string[] dialogueLines;
+    private int currentLineIndex = 0;
+    private bool isDisplaying = false;
+    private bool fastForward = false;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        LoadDialogueFromFile("dialogue.txt");
+        fastForwardButton.onClick.AddListener(FastForwardDialogue);
+        DisplayNextDialogueLine();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+    }
+
+    private void LoadDialogueFromFile(string filePath)
+    {
+        try
+        {
+            dialogueLines = File.ReadAllLines(filePath);
+            if (dialogueLines.Length == 0)
+            {
+                Debug.LogWarning("Dialogue file is empty");
+            }
+        }
+        catch (IOException e)
+        {
+            Debug.LogError("Error loading dialogue file: " + e.Message);
+        }
+    }
+
+    private IEnumerator DisplayDialogueLine(string line)
+    {
+        isDisplaying = true;
+        dialogueText.text = "";
+        foreach (char c in line)
+        {
+            if (dialogueText != null)
+            {
+                dialogueText.text += c;
+            }
+            yield return new WaitForSeconds(characterDelay);
+        }
+        isDisplaying = false;
+    }
+
+    public void FastForwardDialogue()
+    {
+        if (!isDisplaying)
+        {
+            StartCoroutine("FastForwardDialogueCoroutine");
+        }
+    }
+
+    private IEnumerator FastForwardDialogueCoroutine()
+    {
+        isDisplaying = true;
+        float oldDelay = characterDelay;
+        characterDelay /= fastForwardMultiplier;
+        for (int i = 0; i < dialogueLines[currentLineIndex].Length; i++)
+        {
+            if (dialogueText != null)
+            {
+                dialogueText.text += dialogueLines[currentLineIndex][i];
+            }
+            yield return new WaitForSeconds(characterDelay);
+        }
+        characterDelay = oldDelay;
+        isDisplaying = false;
+    }
+
+    private void DisplayNextDialogueLine()
+    {
+        if (dialogueLines != null && currentLineIndex < dialogueLines.Length)
+        {
+            StartCoroutine("DisplayDialogueLine", dialogueLines[currentLineIndex]);
+            currentLineIndex++;
+        }
+        else
+        {
+            Debug.LogWarning("No more dialogue lines");
+        }
+    }
+}
