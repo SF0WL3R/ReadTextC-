@@ -1,0 +1,86 @@
+using System.Collections;
+using System.IO;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class DialogueController : MonoBehaviour
+{
+    public Text dialogueText;
+    public float characterDelay = 0.1f;
+    public float fastForwardMultiplier = 10f;
+    public Button nextButton;
+    public Button fastForwardButton;
+
+    private string[] dialogueLines;
+    private int currentLineIndex = 0;
+    private bool isDisplaying = false;
+    private bool fastForward = false;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        LoadDialogueFromFile("dialogue.txt");
+        nextButton.onClick.AddListener(DisplayNextDialogueLine);
+        fastForwardButton.onClick.AddListener(FastForwardDialogue);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+    }
+
+    private void LoadDialogueFromFile(string filePath)
+    {
+        try
+        {
+            dialogueLines = File.ReadAllLines(filePath);
+        }
+        catch (IOException e)
+        {
+            Debug.LogError("Error loading dialogue file: " + e.Message);
+        }
+    }
+
+    private void DisplayNextDialogueLine()
+    {
+        if (currentLineIndex < dialogueLines.Length)
+        {
+            StartCoroutine("DisplayDialogueLine", dialogueLines[currentLineIndex]);
+            currentLineIndex++;
+        }
+    }
+
+    private IEnumerator DisplayDialogueLine(string line)
+    {
+        isDisplaying = true;
+        dialogueText.text = "";
+        foreach (char c in line)
+        {
+            dialogueText.text += c;
+            yield return new WaitForSeconds(characterDelay);
+        }
+        isDisplaying = false;
+    }
+
+    public void FastForwardDialogue()
+    {
+        if (!isDisplaying)
+        {
+            StartCoroutine("FastForwardDialogueCoroutine");
+        }
+    }
+
+    private IEnumerator FastForwardDialogueCoroutine()
+    {
+        isDisplaying = true;
+        float oldDelay = characterDelay;
+        characterDelay /= fastForwardMultiplier;
+        for (int i = 0; i < dialogueLines[currentLineIndex].Length; i++)
+        {
+            dialogueText.text += dialogueLines[currentLineIndex][i];
+            yield return new WaitForSeconds(characterDelay);
+        }
+        characterDelay = oldDelay;
+        isDisplaying = false;
+    }
+}
