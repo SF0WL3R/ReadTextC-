@@ -40,23 +40,23 @@ public class DialogueController : MonoBehaviour
         }
     }
 
-   private IEnumerator DisplayDialogueLine(string line)
-{
-    isDisplaying = true; // set isDisplaying to true
-    dialogueText.text = "";
-    float delay = fastForward ? characterDelay / fastForwardMultiplier : characterDelay;
-    foreach (char c in line)
+    private IEnumerator DisplayDialogueLine(string line)
     {
-        dialogueText.text += c;
-        yield return new WaitForSeconds(delay);
-        if (fastForward)
+        isDisplaying = true; // set isDisplaying to true
+        dialogueText.text = "";
+        float delay = fastForward ? characterDelay / fastForwardMultiplier : characterDelay;
+        foreach (char c in line)
         {
-            delay = characterDelay / fastForwardMultiplier;
+            dialogueText.text += c;
+            yield return new WaitForSeconds(delay);
+            if (fastForward)
+            {
+                delay = characterDelay / fastForwardMultiplier;
+            }
         }
+        isDisplaying = false; // set isDisplaying to false
+        currentCoroutine = null;
     }
-    isDisplaying = false; // set isDisplaying to false
-    currentCoroutine = null;
-}
 
     public void FastForwardDialogue()
     {
@@ -72,6 +72,9 @@ public class DialogueController : MonoBehaviour
         else
         {
             fastForward = true;
+            StopCoroutine(currentCoroutine); // stop the current coroutine
+            currentCoroutine = null;
+            StartCoroutine(FastForwardCoroutine()); // start a new coroutine to fast-forward
         }
     }
 
@@ -89,6 +92,7 @@ public class DialogueController : MonoBehaviour
             yield return null;
         }
         StopFastForward();
+        DisplayNextDialogueLine(); // display the next line of dialogue
     }
 
     private IEnumerator DisplayNextDialogueLineCoroutine()
