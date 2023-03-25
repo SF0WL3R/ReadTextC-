@@ -12,7 +12,7 @@ public class DialogueController : MonoBehaviour
 
     private string[] dialogueLines;
     private int currentLineIndex = 0;
-    private bool isDisplaying = false;
+    private bool isDisplaying = true;
     private bool fastForward = false;
     private Coroutine currentCoroutine = null;
 
