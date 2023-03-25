@@ -40,11 +40,11 @@ public class DialogueController : MonoBehaviour
         }
     }
 
-    private IEnumerator DisplayDialogueLine(string line)
+   private IEnumerator DisplayDialogueLine(string line)
 {
-    isDisplaying = true;
+    isDisplaying = true; // set isDisplaying to true
     dialogueText.text = "";
-    float delay = fastForward ? characterDelay / fastForwardMultiplier : characterDelay; // added line
+    float delay = fastForward ? characterDelay / fastForwardMultiplier : characterDelay;
     foreach (char c in line)
     {
         dialogueText.text += c;
@@ -54,7 +54,7 @@ public class DialogueController : MonoBehaviour
             delay = characterDelay / fastForwardMultiplier;
         }
     }
-    isDisplaying = true;
+    isDisplaying = false; // set isDisplaying to false
     currentCoroutine = null;
 }
 
