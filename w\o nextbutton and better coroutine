@@ -41,21 +41,22 @@ public class DialogueController : MonoBehaviour
     }
 
     private IEnumerator DisplayDialogueLine(string line)
+{
+    isDisplaying = true;
+    dialogueText.text = "";
+    float delay = fastForward ? characterDelay / fastForwardMultiplier : characterDelay; // added line
+    foreach (char c in line)
     {
-        isDisplaying = true;
-        dialogueText.text = "";
-        foreach (char c in line)
+        dialogueText.text += c;
+        yield return new WaitForSeconds(delay);
+        if (fastForward)
         {
-            dialogueText.text += c;
-            yield return new WaitForSeconds(characterDelay);
-            if (fastForward)
-            {
-                characterDelay = characterDelay / fastForwardMultiplier;
-            }
+            delay = characterDelay / fastForwardMultiplier;
         }
-        isDisplaying = true;
-        currentCoroutine = null;
     }
+    isDisplaying = true;
+    currentCoroutine = null;
+}
 
     public void FastForwardDialogue()
     {
