@@ -71,10 +71,19 @@ public class DialogueController : MonoBehaviour
         }
         else
         {
-            fastForward = true;
-            StopCoroutine(currentCoroutine); // stop the current coroutine
-            currentCoroutine = null;
-            StartCoroutine(FastForwardCoroutine()); // start a new coroutine to fast-forward
+            if (fastForward)
+            {
+                StopCoroutine(currentCoroutine);
+                dialogueText.text = dialogueLines[currentLineIndex];
+                isDisplaying = false;
+                currentCoroutine = StartCoroutine(DisplayNextDialogueLineCoroutine());
+            }
+            else
+            {
+                fastForward = true;
+                StopCoroutine(currentCoroutine);
+                currentCoroutine = StartCoroutine(FastForwardCoroutine());
+            }
         }
     }
 
